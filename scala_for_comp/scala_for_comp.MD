@@ -4,6 +4,7 @@ I put together my spin on this topic based on many excellent resources, includin
 
 * “11.2. Creating a Mutable List” From: Alvin Alexander. “Scala Cookbook” 
 * "Scala for Comprehensions" From: Dean Wampler and Alex Payne. “Programming Scala”
+* "Differences between map and flatMap - converting String to Int" From: Alvin Alexander. “Scala Cookbook” 
 
 ## Basic Use Cases
 The usage which all Java, C++ and C# programers can relate to is the one that is most like a `foreach`:
@@ -15,7 +16,7 @@ The usage which all Java, C++ and C# programers can relate to is the one that is
         println(breed)
 ```
 
-Okay so like your 'foreach' construct there is no data returned by this code it is basically causing a side effect by printing out a list of dog breeds.  You could use it to collect data into a list by using a list in scope like this:
+For this 'foreach' construct there is no data returned, it is basically causing a side effect by printing out a list of dog breeds.  You could use it to collect data into a list by using a list in scope like this:
 
 ```scala
     import scala.collection.mutable.ListBuffer
@@ -33,12 +34,12 @@ Okay so like your 'foreach' construct there is no data returned by this code it 
 This of course is something most Java programmers get and do... all the time.  With Java 8 this becomes a lot better via `map` and `filter`.  In fact, we will see later that Scala already had that and we'll also see how Scala `for comprehensions` simplify the syntax.
 
 ### The Generator Expression
-A brief aside about the `<-` thingy aka the `arrow operator`.  I know that really seems a lot like `:` in the `for (String name : names)` for loop, but that is not actually all it is.  As we'll see later it can mean a lot more.  In fact, it has more in common with the processing supported by Java 8 streams.
+A brief aside about the `<-` operator aka the `arrow operator`.  I know that really seems a lot like `:` in the `for (String name : names)` for loop, but that is not actually all it is.  As we'll see later it can mean a lot more.  In fact, it has more in common with the processing supported by Java 8 streams.
 
 Keep in mind generators are not assignment statements.  They imply a contract for obtaining values from the generator which can be bound to the variable.  I'll show this in the next section.
 
 ### Guards: Filters on the Stream of Values
-So the generator produces a stream/sequence of values (we'll tryt to tighten up the definition later).  The Scala `for comprehension` provides conditonal filtering using a `guard expression` which returns a `Boolean` value (this is Scala and all types are objects, even primitives) which is used to determine if the current value from the stream is fit for use by the rest of the comprehension.
+So the generator produces a stream/sequence of values (we'll try to tighten up the definition later).  The Scala `for comprehension` provides conditonal filtering using a `guard expression` which returns a `Boolean` value (this is Scala and all types are objects, even primitives) which is used to determine if the current value from the stream is fit for use by the rest of the comprehension.
 
 ```scala
     import scala.collection.mutable.ListBuffer
@@ -54,7 +55,7 @@ So the generator produces a stream/sequence of values (we'll tryt to tighten up 
     println(bestOfBest)
 ```  
 
-Above I stated that I would talk a little bit more about `generators` not being assignments.  Here we have a context to do so.  When I first saw the `guard expression` I thought to myself what is the `if` syntax doing?  Why can't we assign and test the value like in 1990s style Java for loop?  Well as I have stated and will repeat `for comprehensions` are not Java for loops, they are much more.  I'm willing to bet experienced Python programmers are already grokking most of this.  I didn't get it until I started reading about how special they were in *Paul Chiusano and Rúnar Bjarnason's “Functional Programming in Scala.”*  Hence, I felt like this presentation would be useful to even non-Scala programmers because they may encounter Scala in Apache Spark or if they choose to learn Scala, I wanted them to appreciate the power "under the hood" of the "humble" `for comprehension`.
+Above I stated that I would talk a little bit more about `generators` not being assignments.  Here we have a context to do so.  When I first saw the `guard expression` I thought to myself what is the `if` syntax doing?  Why can't we assign and test the value like in a 1990s style Java for loop?  Well as I have stated and will repeat `for comprehensions` are not Java for loops, they are much more.  I didn't get it until I started reading about how special they were in *Paul Chiusano and Rúnar Bjarnason's “Functional Programming in Scala.”*  Hence, I felt like this presentation would be useful to even non-Scala programmers because they may encounter Scala in Apache Spark or if they choose to learn Scala, I wanted them to appreciate the power "under the hood" of the "humble" `for comprehension`.
 
 Let's try that shall we?  Create an "assignment" of the conditional and use it in the body of the comprehension like proper Java developers.
 
@@ -191,4 +192,61 @@ So by using a List[Option[String]] we can use Scala's Pattern Matching against t
 
 Personally, the comprehension version is cleaner to read but it is idiomatic.
 
-## Advanced Use Cases
+## Desugaring For Comprehensions: foreach, map, flatMap, and withFilter
+So with the basics in hand we can move on to seeing how the syntax of a `comprehension` maps to methods directly available in Scala on the family of `Traversable` Collections and on implicit collections like Option.
+
+Let's demonstrate each case and show the comprehension against the native format:
+
+### foreach
+While we have already seen foreach in action above, I will show it here for completeness:
+
+```scala
+    val dogBreeds = List("Pug", "French Bulldog", "Shiba Inu", "German Bepperd", "Puggle", "Lab")
+
+    for (s <- dogBreeds) println(s)
+
+    dogBreeds foreach println
+```
+
+It is intersting to note here that pure scala method is pretty concise and may be a bit more clear, as we saw above there are cases where this is not the situation.
+
+### map
+The next operation to show is a map:
+
+```scala
+    val dogBreeds = List("Pug", "French Bulldog", "Shiba Inu", "German Bepperd", "Puggle", "Lab")
+
+    for (s <- dogBreeds) yield s.reverse
+
+    dogBreeds map (_.reverse)
+```
+
+### flatMap
+The process of flat mapping is a way to map entries and break them out of their nest sequences.  Let's change it up a bit to demonstrate this.  For this case let's show what happens when we create a nested mapping.  In this case we will take the square root of list of numbers and use None when NaN is created or Some() otherwise:
+
+```scala
+    val numbers = List(0.0, 4.0, 9.0, -1.0, -2.0, -9.0)
+
+    implicit def convert(l: List[Double]): List[Option[Double]] = l map { x => val sqrt = Math.sqrt(x); if (!sqrt.isNaN) Some(sqrt) else None }
+
+    for {rootOpt <- numbers :List[Option[Double]]
+         root <- rootOpt } yield root
+
+    (numbers:List[Option[Double]]).flatMap(x => x)
+
+```
+I would say perhaps the flatMap version is less lines of code, but I would also suggest that having to say `x => x` or using an identity function `x => x` isn't as direct as saying `yield root` though that may be a matter of taste.  The point being that the `for comprehension` supports unwinding nested list constructs in an idiomatic way.
+
+### withFilter - on a map process
+We can actually solve the same problem above without resorting to leaning on implicit conversions.  In cases where we have the luxury of processing the List elements in our loop we can use conditionals to protect our code from yielding NaNs:
+
+```scala
+    val numbers = List(0.0, 4.0, 9.0, -1.0, -2.0, -9.0)
+
+    for {x <- numbers
+         if (x >= 0.0)} yield Math.sqrt(x)
+
+   numbers withFilter (_ >= 0.0) map Math.sqrt
+
+```
+Once again the `comprehension` approach offers a way to leverage map based processing, in this case it is using `withFilter`.  Perhaps you are wondering if there is a native mechanism to conditionaly support `break` or `continue`. No. Not yet.  However if you read [this post about implementing it in Scala](http://erikerlandson.github.io/blog/2015/01/24/monadic-break-and-continue-for-scala-sequence-comprehensions/), you'll see that there is a Functional Programming way to do this.  Looking at the non-comprehension approach we see nothing very new, just standard Scala.  I would argue however that it is less declarative in form than the comprehension.
