@@ -1,13 +1,13 @@
-# For Comprehenions: More than Java foreach
+# For Comprehensions: More than Java foreach
 ## Sources
 I put together my spin on this topic based on many excellent resources, including:
 
-* “11.2. Creating a Mutable List” From: Alvin Alexander. “Scala Cookbook” 
+* “11.2. Creating a Mutable List” From: Alvin Alexander. “Scala Cookbook” 
 * "Scala for Comprehensions" From: Dean Wampler and Alex Payne. “Programming Scala”
 * "Differences between map and flatMap - converting String to Int" From: Alvin Alexander. “Scala Cookbook” 
 
 ## Basic Use Cases
-The usage which all Java, C++ and C# programers can relate to is the one that is most like a `foreach`:
+The usage to which all Java programmers can relate is the basic `foreach` style iteration:
 
 ```scala
     val dogBreeds = List("Pug", "French Bulldog", "Shiba Inu", "German Bepperd", "Puggle", "Lab")
@@ -32,7 +32,7 @@ For this 'foreach' construct there is no data returned, it is simply printing ou
 ```  
 
 ### Guards: Filters on the Stream of Values
-The Scala `for comprehension` provides conditonal filtering using a `guard expression` which is used to determine if the current value from the stream is fit for use by the rest of the comprehension.
+The Scala `for comprehension` provides conditional filtering using a `guard expression` which is used to determine if the current value from the stream is fit for use by the rest of the comprehension.
 
 ```scala
     import scala.collection.mutable.ListBuffer
@@ -48,7 +48,7 @@ The Scala `for comprehension` provides conditonal filtering using a `guard expre
     println(bestOfBest)
 ```  
 
-Now let's see what happens if we try to assign the boolean expression using `<-` and then use it in a conditional statement.  Create an "assignment" of the conditional and use it in the body of the comprehension, as we try below.
+Now let's see what happens if we try to assign the boolean expression using `<-` and then use it in a conditional statement.
 
 ```scala
     import scala.collection.mutable.ListBuffer
@@ -72,9 +72,9 @@ What happens?
                                     ^
 ```
 
-As you can see, we cannot simply use `<-` to assign values because it is looking for a foreach method on the type.  So if you need to conditonally filter data using a `for comprehension`, then you use the idiomatic guard expression `if (<condition>)` syntax.
+As you can see, we cannot simply use `<-` to assign values because it is looking for a foreach method on the type.  So if you need to conditionally filter data using a `for comprehension`, then you use the idiomatic guard expression `if (<condition>)` syntax.
 
-However, if you choose not use a guard expression, you can actually use an assignment and then test for conditions in the body of the comprehension like this:
+However, if you choose not to use a guard expression, you can actually use an assignment and then test for conditions in the body of the comprehension like this:
 
 ```scala
     import scala.collection.mutable.ListBuffer
@@ -104,7 +104,7 @@ The body of the comprehension can use the `yield` keyword to return values into 
     println(bestOfBest)
 ```  
 
-The type of the Collection output is determined by the first collection being iterated. These simple, inline examples demonstrate this property:
+The type of the Collection output is determined by the first collection being iterated. These simple, in-line examples demonstrate this property:
 
 ```scala
     for (optionalPet <- List[Option[String]](Some("Cat")); petType <- optionalPet) yield petType
@@ -113,6 +113,25 @@ The type of the Collection output is determined by the first collection being it
 
     for (optionalPet <- Set[Option[String]](Some("Cat")); petType <- optionalPet) yield petType
 ```  
+
+An interesting thing to note at this point is if we tried our failed "assign boolean" pattern for a `yield` comprehension we get a different error message:
+
+```scala
+    val  dogBreeds = List("Pug", "French Bulldog", "Shiba Inu", "German Bepperd", "Puggle", "Lab")
+
+    for (breed <- dogBreeds;
+         bestie <- breed.contains("Pug"))
+           yield (bestie, breed)
+
+```
+
+```bash
+<console>:10: error: value map is not a member of Boolean
+                       bestie <- breed.contains("Pug"))
+                                               ^
+```
+
+Here we see that the comprehension wants something that supports `map` while last time it expected a `foreach`.  In the former case, the comprehension yields a value.  In the latter case, the body of the comprehension was not returning anything since it was only printing out each value. 
 
 ### Conventions 
 
@@ -140,7 +159,7 @@ The comprehension can support variable assignments based on computations.  These
 
 ### Traversing Option using For Comprehension
 
-Before we close up this discussion of the basics of `for comprehensions` in Scala, I'd like to show where we are going in the next section.  The point behind the comprehension is to regularize and simplify a pattern of interactions with collections.   Basically to be a Facade of sorts to the various traversals and filterings of collections, even simple one-element collections like the `Option`.  Java  programmers should take note, because the creators of Java 8 took some of these same ideas into Java.
+The point behind the comprehension is to regularize and simplify a pattern of interactions with collections.   Basically, it is a Facade of sorts for the various traversals and filtering of collections, even simple one-element collections like the `Option`.
 
 For our simple case assume you have a function that hands back dog breed names as options based on an initial letter for the name and you want to process the result:
 
@@ -161,7 +180,7 @@ The expression `breedName <- result` allows the comprehension to bind the value 
 
 Because of this simplifying behavior of the comprehension, we can basically process one or an infinite number of Options.
 
-It is possible use Scala pattern matching to make this processing explicit when processing lists:
+It is possible to use Scala pattern matching to make this processing explicit when processing lists:
 
 ```scala
     val dogBreeds = List("Pug", "French Bulldog", "Shiba Inu", "German Bepperd", "Puggle", "Lab")
@@ -176,7 +195,7 @@ It is possible use Scala pattern matching to make this processing explicit when 
 
 ```
 
-So by using a List[Option[String]] we can use Scala's Pattern Matching against the entries to "deconstruct" the Option subclass Some(value).  So with a simple `for {Some(breedName) <- results}` we can iterate over our List, process only the good stuff and extract the values in the object of concern.  To do this without the comprehension it would be something like this:
+So by using a List[Option[String]] we can use Scala's Pattern Matching against the entries to "deconstruct" the Option subclass Some(value).  With a simple `for {Some(breedName) <- results}` we can iterate over our List, process only the good stuff and extract the values in the object of concern.  To do this without the comprehension it would be something like this:
 
 ```scala
     val dogBreeds = List("Pug", "French Bulldog", "Shiba Inu", "German Bepperd", "Puggle", "Lab")
@@ -192,10 +211,8 @@ So by using a List[Option[String]] we can use Scala's Pattern Matching against t
 
 ```
 
-Personally, the comprehension version is cleaner to read but it is idiomatic. In the case where you are using what is called a `case class`, the magic is even more powerful, concise and just plain useful.
-
 ### What you saw but may have missed
-I also missed it, but as I fininshed writing up this peice to talk about the `for comprehension` I learned about something else it can do which is very powerful.  The additional feature of which I speak is the use of pattern matching to extract parts of data in both the generator expression  (`<-`) and the assignment expressions (`=`) supported in the comprehension construct.  A set of one-liner examples goes as follows:
+Pattern matching with extractor support.  This feature can be used to extract parts of data in both the generator expression  (`<-`) and the assignment expressions (`=`) supported in the comprehension construct.  A set of one-liner examples goes as follows:
 
 ```scala
 // 1
@@ -208,7 +225,7 @@ I also missed it, but as I fininshed writing up this peice to talk about the `fo
     for (Some(optionalPetOption) <- List[Option[Option[String]]](Some(Some("Cat")), None, Some(None)); petType = optionalPetOption match {case Some(x) => x; case None => }) yield petType
 ```
 
-In the code above we use `Some(optionalPetOption)` to unwrap the inner Option from the generator and `Some(petType)` to unwrap the value in that Option.  This allows `petType` to be bound to the value `"Cat"`.  The second example supports the case where the value is `Some(None)`.  This is because we are allowing the non-specific generator `petType <- optionalPetOption` to do the default behavior and ignore None.  Now if we if try to get specific using an assignment, as in the third case, the `Some(None)` case reults in errors:
+In the code above we use `Some(optionalPetOption)` to unwrap the inner Option from the generator and `Some(petType)` to unwrap the value in that Option.  This allows `petType` to be bound to the value `"Cat"`.  The second example supports the case where the value is `Some(None)`.  This is because we are allowing the non-specific generator `petType <- optionalPetOption` to do the default behavior and ignore None.  Now if we try to get specific using an assignment, as in the third case, the `Some(None)` case results in errors:
 
 ```bash
 scala.MatchError: None (of class scala.None$)
@@ -227,7 +244,7 @@ With the fourth case we end up with something that "works" but instead of produc
 res26: List[Any] = List(Cat, ())
 
 ```
-The `()` is Scala's way of saying `void` a.k.a `Unit`.  Anyway, this can be taken in various directions and the power of declarative, Functional Programming can be used to express your intentions... or not.
+The `()` is Scala's way of saying `void` a.k.a `Unit`.  Anyway, this can be taken in various directions but we'll stop here.
 
 ## Desugaring For Comprehensions: foreach, map, flatMap, and withFilter
 So with the basics in hand we can move on to seeing how the syntax of a `comprehension` maps to methods directly available in Scala on the family of `Traversable` Collections and on implicit collections like Option.
@@ -245,7 +262,7 @@ While we have already seen foreach in action above, I will show it here for comp
     dogBreeds foreach println
 ```
 
-It is intersting to note here that pure scala method is pretty concise and may be a bit more clear, as we saw above there are cases where this is not the situation.
+It is interesting to note here that pure scala method is pretty concise and may be a bit more clear, as we saw above there are cases where this is not the situation.
 
 ### map
 The next operation to show is a map:
@@ -273,7 +290,7 @@ The process of flat mapping is a way to map entries and break them out of their 
 
 ```
 
-I would say perhaps the flatMap version is less lines of code, but I would also suggest that having to say `x => x` or using an identity function `x => x` isn't as direct as saying `yield root` though that may be a matter of taste.  The point being that the `for comprehension` supports unwinding nested list constructs in an idiomatic way.
+I would say perhaps the flatMap version is less lines of code, but I would also suggest that having to say `x => x` isn't as direct as saying `yield root` though that may be a matter of taste.  The point being that the `for comprehension` supports unwinding nested list constructs in an idiomatic way.
 
 ### withFilter - on a map process
 We can actually solve the same problem above without resorting to leaning on implicit conversions.  In cases where we have the luxury of processing the List elements in our loop we can use conditionals to protect our code from yielding NaNs:
@@ -288,10 +305,10 @@ We can actually solve the same problem above without resorting to leaning on imp
 
 ```
 
-Once again the `comprehension` approach offers a way to leverage map based processing, in this case it is using `withFilter`.  Perhaps you are wondering if there is a native mechanism to conditionaly support `break` or `continue`. No. Not yet.  However if you read [this post about implementing it in Scala](http://erikerlandson.github.io/blog/2015/01/24/monadic-break-and-continue-for-scala-sequence-comprehensions/), you'll see that there is a Functional Programming way to do this.  Looking at the non-comprehension approach we see nothing very new, just standard Scala. 
+Once again the `comprehension` approach offers a way to leverage map based processing, in this case it is using `withFilter`.  Perhaps you are wondering if there is a native mechanism to conditionally support `break` or `continue`. No. Not yet.  However if you read [this post about implementing it in Scala](http://erikerlandson.github.io/blog/2015/01/24/monadic-break-and-continue-for-scala-sequence-comprehensions/), you'll see that there is a Functional Programming way to do this.  Looking at the non-comprehension approach we see nothing very new, just standard Scala. 
 
 ## Conclusion
-I actually kept that last section down to the basics.  You'll notice I used no patterns on the left side of any assignments or generators - if I did the non-comprehension code would become a little more complex.  Understanding the implications of tbis is best dealt with by reading through  *“Translation Rules of for Comprehensions”, Dean Wampler and Alex Payne, “Programming Scala”* or [the Language Specification: 6.19 For Comprehensions and For Loop](http://www.scala-lang.org/docu/files/ScalaReference.pdf).  I will show one example here, let's return to one of our examples from above that uses pattern matching to get a value from an Option:
+I actually kept that last section down to the basics.  You'll notice I used no patterns on the left side of any assignments or generators - if I did the non-comprehension code would become a little more complex.  Understanding the implications of this is best dealt with by reading through  *“Translation Rules of for Comprehensions”, Dean Wampler and Alex Payne, “Programming Scala”* or [the Language Specification: 6.19 For Comprehensions and For Loop](http://www.scala-lang.org/docu/files/ScalaReference.pdf).  I will show one example here, let's return to one from above that uses pattern matching to get a value from an Option:
 
 ```scala
     val dogBreeds = List("Pug", "French Bulldog", "Shiba Inu", "German Bepperd", "Puggle", "Lab")
@@ -306,7 +323,7 @@ I actually kept that last section down to the basics.  You'll notice I used no p
 
 ```
 
-To represent the same capabiilty in *normal* Scala you would need to do something like this:
+To represent the same capability in *normal* Scala you would need to do something like this:
 
 ```scala
     // Assume the setup is the same as above here.
