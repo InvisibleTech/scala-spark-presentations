@@ -178,7 +178,7 @@ For our simple case assume you have a function that hands back dog breed names a
 
 The expression `breedName <- result` allows the comprehension to bind the value in the Option (a dog breed name) to the variable `breedName`.  What if there is no value or, more properly in Option-speak, what if the value is None?  Normally, if you try to access the value of None you'd get an exception of type `NoSuchElementException`, except the `for comprehension`  deals with this exception and simply avoids processing the None element.
 
-Because of this simplifying behavior of the comprehension, we can basically process one or an infinite number of Options.
+Because of this simplifying behavior of the comprehension, we can easily process one or a collection of Options.
 
 It is possible to use Scala pattern matching to make this processing explicit when processing lists:
 
@@ -202,8 +202,9 @@ So by using a List[Option[String]] we can use Scala's Pattern Matching against t
 
     def findStarter(start: String): List[Option[String]] = dogBreeds.map(breed => if (breed.startsWith(start)) Some(breed) else None)
 
-    def printResult(results: List[Option[String]]) = results.foreach({case Some(breedName) => println(breedName)
-                                                                        case _ => })
+    def printResult(results: List[Option[String]]) = results.foreach({
+        case Some(breedName) => println(breedName)
+        case _ => })
 
     printResult(findStarter("P"))
 
