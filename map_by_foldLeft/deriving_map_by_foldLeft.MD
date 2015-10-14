@@ -7,7 +7,9 @@ However, I found [Maurício Linhares' Learning Scala by building Scala - Lists](
 >We could even implement the map function above in terms of a fold!
 
 *Of course! Trivial!* Yeah... not quite, not if it is a `foldLeft`. Now, luckily I had seen something like what I might need as part of the solution for this.  However, I could only remember two things about it:
+
 1. I need to return a function, delay evaluation, we'll talk about why later.
+
 2. I think I need to start with some kind of Identity function as the accumulator.
 
 While I knew where to find the code to do all of this, I wanted to burn in the lesson by struggling with it myself.
