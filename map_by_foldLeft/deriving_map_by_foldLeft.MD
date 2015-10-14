@@ -95,7 +95,7 @@ I did some more sketching in my lab book, not sure how to convey it but I'll try
 // Starting with my example from above, repeated here for ease of reading:
 val g:(LinkedList[Int], String => Int) =>  LinkedList[Int] = (tail,f) => Node(f("Nine"), Node(f("ten"), tail))
 
-// Okay so I need a way to return this by composing it but I also needed tp
+// Okay so I need a way to return this by composing it but I also needed to
 // understand what my accumulator was going to be. Then I realized, "duh"
 // I need to accept the empty list LinkedList[E] and return a LinkedList[E]:
 val acc: LinkedList[Int] => LinkedList[Int] = null
@@ -135,7 +135,7 @@ def map_lf[R](f: E => R): LinkedList[R] = {
     foldLeft(acc)(h)(LinkedList[R]())
 }
 ```
-Now, this is very verbose for Scala, and I take a few steps to refactor the code.  At this point I did consult code I had written before because, as usual there were some painful gaps in the type inferencing.  Did I happen to mention I did all of this coding in the REPL and using a Sublime Text 2?  Not a lot of love there regarding completion of feedback:
+Now, this is very verbose for Scala, and I take a few steps to refactor the code.  At this point I did consult code I had written before because, as usual there were some painful gaps in the type inferencing.  Did I happen to mention I did all of this coding in the REPL and using a Sublime Text 2?  Not a lot of love there regarding code completion and syntax feedback:
 
 ```scala
 def map[R](f: E => R): LinkedList[R] = {
