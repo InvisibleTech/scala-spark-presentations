@@ -66,7 +66,7 @@ Now, I added the `map` function to the whole process and I could use this functi
 scala> g(LinkedList[Int](), _.length)
 res3: LinkedList[Int] = Node(4,Node(3,Empty))
 ```
-At this point I started stumbling around and I needed less RELP and some paper. Using one of my lab notebooks I use to talk to myself in pictures and pseudo-code and looking at the `reverse` function from the blog post:
+At this point I started stumbling around and I needed less RELP and some paper. Using one of my lab notebooks I use to talk to myself in pictures and pseudo-code I started looking at the `reverse` function from the blog post:
 
 ```scala
 def reverse() : LinkedList[E] = {
@@ -75,7 +75,7 @@ def reverse() : LinkedList[E] = {
   }
 }
 ```
-Then I decided to write down a *trace* of what `foldLeft` did in this case.  Keep in mind that `foldLeft` is tail recursion optimized and builds an accumulation of the processing to the end of the input list.  It does so under the assumption that the operation is *left associative* but it is not.  Notice that the `Node`  constructor wants a value element followed by a `LinkedList` and then this new `LinkedList` would be fed into the right side of the next `concatenation` of a value using the `Node` constructor.   
+Then I decided to write down a *trace* of what `foldLeft` did in this case.  Keep in mind that `foldLeft` is tail recursion optimized and accumulates the results of the processing until it reaches the end of the input list.  It does so under the assumption that the operation is *left associative* but in this case it is not.  Notice that the `Node`  constructor wants a value element followed by a `LinkedList` and then this new `LinkedList` would be fed into the right side of the next `concatenation` of a value using the `Node` constructor.   
 
 However, as my trace will reveal, this leads to a natural reversal of order of the list, which is fine for `reverse` but not so much for `map`.  `foldRight` would have been a better choice, but I wanted to take this on as a challenge.  Normally, you would do what I am deriving here in a `foldRight` using a tail recusion optimized `foldLeft` (like this one).  Any way, my trace shows:
 
