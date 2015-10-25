@@ -225,3 +225,33 @@ Another way to remember this is to realize:
 * If given as `? super T` the type is bounded `T <= x <= Object`.
 
 What about final classes?  Consider the `String` class which is final and thus has no subtypes.  `List<String>` is a **subtype** of `List< ? extends String >` and they are not the same.  
+### Wildcard Capture
+When a generic method is invoked the type parameter may be chosen to match the unknown parameter type. This is known as *wildcard capture*. Let's work through an example from the Collections class.
+
+```java
+public static void reverse(List< ? > list);
+```
+So let's assume we try to implement this method like this, it will have a compiler error:
+```java
+public static void reverse(List< ? > list) {
+  List<Object> tmp = new ArrayList<Object>(list);
+  for (int i = 0; i < list.size(); i++) {
+    list.set(i, tmp.get(list.size()-i-1));  // compile-time error
+  }
+}
+```
+The error is caused by the fact that elements of List<Object> cannot be assigned to List< ? >.  You cannot fix it by changing `tmp` to be `List< ? >`.  
+In fact, if you try this, you will see a new *name* given to the capture for tmp, in other words, the compiler doesn't *see* the connection between the two wildcards. You get an error message like this "The method set (int, capture#8-of ? ) in the type List< capture#8-of ? > is not applicable for the arguments (int, capture#9-of ? )".  
+
+You fix this with extra methods that **capture** the Type as needed:
+
+```java
+public static void reverse(List< ? > list) { rev(list); }
+private static <T> void rev(List<T> list) {
+  List<T> tmp = new ArrayList<T>(list);
+  for (int i = 0; i < list.size(); i++) {
+    list.set(i, tmp.get(list.size()-i-1));
+  }
+}
+```
+Now, given this setup, `T` can capture the type for us and we can make happy safe code.
