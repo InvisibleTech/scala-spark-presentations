@@ -255,3 +255,118 @@ private static <T> void rev(List<T> list) {
 }
 ```
 Now, given this setup, `T` can capture the type for us and we can make happy safe code.
+### Restrictions on Wildcards
+Here is the short list of things you cannot do using a **Wildcard** in the type parameter.  First, consider that a **wildcard may not appear at the top level of instance creation expressions (new), in explicit type parameters in generic method calls, or in supertypes (extends, implements)**.
+#### Instance Creation
+These are examples that produce compiler errors:
+```java
+List< ? > list = new ArrayList< ? >(); // error
+List< ? extends Platypus > platytudes = new LinkedList< ? extends Platypus >(); // error
+```
+
+So this means that to use something, you need to instantiate the concrete type and then method parameters or local variables may alias the objects and use wildcard type declarations.
+
+**NOTE: Nested Wildcards are Allowed!** 
+So this is okay then:
+
+```java
+List<Set<?>> asetList = new LinkedList<Set<?>>(); // okay
+```
+#### Generic Method Calls
+Similar rules apply to *type witnesses* on method calls, assume our class now has a factory method:
+```java
+public static class SomeContainingClass<T> {
+    private T value;
+    public T give() {
+        return value;
+    }
+
+    public void take(T in) {
+        value = in;
+    }
+    
+    public  static <T> SomeContainingClass<T> factory() {return new SomeContainingClass<T>();}
+}
+```
+
+Now we see what works and what doesn't:
+```java
+SomeContainingClass< ? > some1 = SomeContainingClass.factory(); // Okay
+SomeContainingClass< ? > some2 = SomeContainingClass.<Object>factory(); // Okay
+
+SomeContainingClass< ? > some3 = SomeContainingClass.< ? >factory(); // Nope!
+// Error - Wildcard is not allowed at this location
+
+SomeContainingClass< ? > some4 = SomeContainingClass.<List< ? >>factory(); // Okay
+SomeContainingClass< Set< ? > > some5 = SomeContainingClass.<Set< ? >>factory(); // Okay
+```
+#### SuperTypes
+Okay now the final part of this section.  Since a class when instantiated also instantiates its super class, that class must be typed based upon these same rules.
+
+```java
+// Compiler error here.
+class SomeOther extends SomeContainingClass< ? > {
+    
+}
+
+// This is okay
+class SomeBetter extends SomeContainingClass< Set < ? > > {
+    
+}
+```
+#### The Motivations 
+“The Java designers had in mind that every wildcard type is shorthand for some ordinary type, so they believed that ultimately every object should be created with an ordinary type. It is not clear whether this restriction is necessary, but it is unlikely to be a problem.”
+
+Excerpt From: Maurice Naftalin and Philip Wadler. “Java Generics and Collections.” 
+
+## Declarations
+### Statics
+Because of type erasure, there is only one class.  So, ta-da nosurprise the statics of the class are **shared across instances**.  Since we cannot know what `Type` a static has when classes are loaded and... yeah there's only one class and statics, the types of the statics are known and not generic.
+### Nested Classes
+If an inner class is **not static** then the type parameter of the outer class is visible in the innner class.  Consistently, static nested classes do not see the type... they're static and cannot know the type.
+### How Erasure Works
+How does erasure work?
+* drop all type parameters from parameterized types
+* replace any type variable with the erasure of its bound or Object if it has no bound.
+* replace with the erasure of the leftmost bound if it has multiple bounds. EX: `S extends Readable & Closeable` and `T extends Appendable & Closeable` means we erase to `Readable & Appendable`.
+#### Limitations
+Because all the methods and types erase down without types there are possible collisions and so they are prevented by the compiler as "cannot erase to the same type" kind of error.
+##### “cannot overload two methods with same erasure”
+This is a compile time error:
+```java
+class Platypus {
+    public static boolean eat(List<Tacos> foods) {}
+    public static boolean eat(List<Fruit> foods) {}
+}
+```
+While you'd think this is simply an overload, with type erasure the uniqueness of signature goes away and this now is a pair of duplicate methods.
+
+##### “cannot implement two interfaces with same erasure”
+```java
+class Platypus implements Mammal<Fur>, Mammal<Eggs>{
+    public static boolean eat(List<Tacos> foods) {}
+    public Fur getMammaly(){ return new Fur();}
+    public Eggs getMammaly(){ return new Eggs();}
+}
+```
+## Reification
+“In computing, reification has come to mean an explicit representation of a type—that is, run-time type information. In Java, arrays reify information about their component types, while generic types do not reify information about their type parameters.”
+
+Excerpt From: Maurice Naftalin and Philip Wadler. “Java Generics and Collections.” 
+
+#### Reifiable Types
+“In Java, we say that a type is reifiable if the type is completely represented at run time — that is, if erasure does not remove any useful information.”
+
+Excerpt From: Maurice Naftalin and Philip Wadler. “Java Generics and Collections.”
+
+A type is reifiable if it is one of:
+* A primitive type (e.g. int)
+* A non-parameterized class or interface type
+* A parameterized type where all type arguments are unbounded wildcards (e.g. List< ? >, Set < ? >)
+* A raw type (e.g. List, Set)
+* An array whose component type is reifiable (e.g. String[], List< ? >][], List, int)
+
+A type is not reifiable if:
+* A type variable (e.g T)
+* A parameterized type with type arguments (e.g. List<Number>, Set<String>)
+* A parameterized type with a bound (e.g. Mammal< ? super Eggs >, List < ? extends Middle> )
