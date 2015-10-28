@@ -370,3 +370,52 @@ A type is not reifiable if:
 * A type variable (e.g T)
 * A parameterized type with type arguments (e.g. List<Number>, Set<String>)
 * A parameterized type with a bound (e.g. Mammal< ? super Eggs >, List < ? extends Middle> )
+
+An interesting side effect of using syntactic rules like this is:  `List < ? >`is reifiable but `List < ? extends Object >` **is not** by the not reifiable rules above.
+## Instance Tests and Casts
+Instance tests and casts depend upon runtime type information and hence depend on reification.  So the following code is has errors:
+
+```java
+public SomeContainingClass<T> isThisOneToo(Object obj) {
+//            if (obj instanceof SomeContainingClass<T>) { // Error: Cannot perform instanceof check against parameterized type
+//                return (SomeContainingClass<T>) obj; // Unchecked cast warning.
+//            }
+    if (obj instanceof SomeContainingClass< ? >) {
+        return (SomeContainingClass< T >) obj;// Unchecked cast warning.
+    }
+    
+    return null;
+}
+```
+## Nonreifable Casts
+ It is always an error to test against types that are **not** reifable, but you can cast to non-reifable types **in some cases**. 
+
+ ```java
+public static <T> List<T> asList(Collection<T> c)  throws InvalidArgumentException
+{
+  if (c instanceof List< ? >) {
+    return (List<T>)c; // No warning... why?
+  } else throw new InvalidArgumentException("Argument not a list");
+}
+ ```
+Why no warning here?  Well because we know the object is `Collection<T>` and so any subclass (`List`) must then also be `List<T>`.
+## Unchecked Casts
+The above case is not the common case and **most** of the time the cast to a non-reifable will result in an **Unchecked Cast** warning.  Here is an example of a method that converts a raw list to a list of a known type but must pay in warnings about unchecked casts.
+```java
+public static <T> List<SomeContainingClass<T>> promote(List<Object> objs) {
+    for (Object o : objs)
+      if (!(o instanceof SomeContainingClass< ? >))
+        throw new ClassCastException();
+    return ( List<SomeContainingClass<T>>)(List< ? >)objs; // unchecked cast
+    // return ( List<SomeContainingClass<T>>)objs; 
+    // unchecked cast only as long as we change Generic Type of paramater objs 
+    // to List< ? extends Object> or List< ? >
+  }
+```
+In general, `unchecked casts` are to be regarded with suspicion. So, don't make them the common thing.
+## Exceptions
+You might think to declare a class like `class ParametricException<T> extends Exception` and use in `catch` exceptions.   These are **both** compile time errors.  The reason makes sense: the type `T` is not reifable, hence not available to us at runtime and so cannot be used in `catch` statements.
+
+However, you certainly **are allowed** to use a generic parameter of class or function like `T extends Throwable` and then use it like `throws T`.  This is using exceptions as types for a generic **not** making Exceptions generic.
+## Array Creation
+Basically, arrays **require a reifable type at creation time** so simple put things that are not reifable like `T[]` or `Foo<T>[]` or even `Foo<String>[]` are **not** allowed.  They won't compile.
