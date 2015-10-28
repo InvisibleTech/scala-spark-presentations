@@ -21,9 +21,9 @@ nums.add(2);
 
 nums.add(3.14)
 ```
-As you can see above we have taken advantage of the second part of the substitution principle. However, there is something that doesn't apply here.  In our first example we see `Integer` is a subtype of `Number` as is `Double` and so we can add both the `Number` based collection. 
+As you can see above we have taken advantage of the second part of the substitution principle. However, there is something that doesn't apply here.  In our first example we see `Integer` is a subtype of `Number`, as is `Double` and so we can add both to the `Number` based collection. 
 
-Does this also mean that `List<Integer>` is a subclass of `List<Number>`?  No, it doesn't the relationship `List<Integer>` to `Collection<Integer>` is valid. However, the 
+Does this also mean that `List<Integer>` is a subclass of `List<Number>`?  No, it doesn't, but the relationship of `List<Integer>` to `Collection<Integer>` is valid because List implements Collection. This is shown below. 
 
 ```java
 @Test
@@ -32,11 +32,9 @@ public void should_NOT_Compile_GIVEN_UnSupportedGenericUpCast() throws Exception
     ints.add(1);
     ints.add(2);
     //List<Number> nums = ints;  // compile-time error
-    //nums.add(3.14);  // The Substitution Principle would allow this and this
-    // is dangerous because now a true List<Integer> contains a Double, if this
-    // was allowed and we retrieved that value via `ints` we would have get an
-    // error getting it back.  So to avoid this trouble we cannot simply upcast
-    // List<Integer> as List<Number>.
+    //nums.add(3.14);  // The Substitution Principle would allow this 
+    // for a List<Number>.  In this case we have no way to do this because
+    // we cannot assign ints to nums and use it to add a Double to the list.
 
     // Should fail.
     assertEquals(Arrays.asList(1, 2, 3.4), ints);
@@ -59,7 +57,7 @@ public void should_NOT_Compile_() throws Exception {
 Once again the Substitution Principle is not in effect for this case because `List<Number>` is not a subtype of `List<Integer>`.  Not *contravariant*.
 
 ### What About Arrays?
-Well, for arrays there is a default *covariance*.  This means that `Integer[]` is a subtype of `Number[]`.  How can we get *variance* in a List?  There is a way with some exceptions.  This is the reason for wildcards in types.
+Well, for arrays there is a default *covariance*.  This means that `Integer[]` is a subtype of `Number[]`.  How can we get *variance* in a List?  There is a way with some limitations.  This is the reason for wildcards in generic types.
 
 ### Generic Wildcards
 #### Extends
