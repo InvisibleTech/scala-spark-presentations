@@ -2,7 +2,7 @@
 ## Preface
 These are notes are based on my reading of Maurice Naftalin and Philip Wadler. “Java Generics and Collections.” While most of these notes in this repo are about my explorations in Scala, I wanted to make sure I really understood Java Generics because as I have used Scala at work, I have found that Java's handling of Generics has lent some *excitement* to the process.  There are cases where, when calling Spark code from Java I simply haven't found an acceptable way to eliminate all compiler warnings.
 ### Code Samples
-All or almost all code samples are taken from “Java Generics and Collections.”.
+Most of the code samples are taken from “Java Generics and Collections.” A few are mine.
 
 ## Subtyping and Wildcards
 ### Substitution Principle
