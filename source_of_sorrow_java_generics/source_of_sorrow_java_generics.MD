@@ -576,3 +576,4 @@ This works very well but yes it is sad to have to do this all because of type er
 You can only have a vararg of a type that is reifiable.
 
 
+
