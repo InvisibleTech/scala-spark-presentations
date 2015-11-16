@@ -417,3 +417,162 @@ You might think to declare a class like `class ParametricException<T> extends Ex
 However, you certainly **are allowed** to use a generic parameter of class or function like `T extends Throwable` and then use it like `throws T`.  This is using exceptions as types for a generic **not** making Exceptions generic.
 ## Array Creation
 Basically, arrays **require a reifable type at creation time** so simple put things that are not reifable like `T[]` or `Foo<T>[]` or even `Foo<String>[]` are **not** allowed.  They won't compile.
+
+# Reification
+Basically this is the process of representing the run-time types of objects.  We need to understand reifiable types to understand this process.
+
+## Assumed Classes For This Section
+```java
+public class SomeThingInsideMe<T> {
+    protected T value;
+}
+
+public class SomeContainingClass< T > extends SomeThingInsideMe< T > {
+    public T give() {
+        return value;
+    }
+
+    public void take(T in) {
+        value = in;
+    }
+    
+    public  static <T> SomeContainingClass<T> factory() {return new SomeContainingClass<T>();}
+}
+```
+## Reifiable Types Explained
+A type is reifiable in Java if its type is completely represented at runtime.
+
+The list of reifiable types is one of:
+* Primitive type
+* Non-parameterized type: class or interface (e.g. Number, String, Runnable)
+* Parameterized type using only unbounded wildcards (e.g. List< ? >, Foo< ? >, Map< ?, ? >)
+* Raw type (e.g. List, Map, Set)
+* An array whose component type is a reifiable type (e.g. int[][], List< ? >[], Set[], String[][][])
+
+## Non-Reifiable Types
+* A type variable, such as T or R, etc.
+* A parameterized type with actual parameters (e.g. List<T>, Foo<Q>, Map<K, V>)
+* A pameterized type with a bound (e.g. List<? extends Number>, Foo<? super Q>)
+
+**NOTE:** it is interesting to note that `List< ? extends Object >` which has the same meaning as `List < ? >` is **not** treated as **reifiable**.
+
+## Instance Tests, Casts and Other
+So, basically we have a few simple rules given we know that definition of reifiable type:
+
+* `instanceof` - it is an **ERROR** to use `instanceof` on a non-reifiable type.
+* Casts to a non-reifiable type can be permitted.  Consider this situation, it is really standard fare for casting:
+```java
+public static <T> SomeContainingClass<T> toContaining(SomeThingInsideMe<T> thing) {
+    if (c instanceof SomeContainingClass< ? >) { // Reifiable type is testable;
+        return (SomeContainingClass< T> thing); // This simply a downcast from the argument type
+    }
+
+    return null;
+}
+```
+* Since it is rare that the compiler can determine if a cast to a non-reifiable type is okay, you will usually get an `unchecked cast warning  `.
+
+While `unchecked cast` warnings seem harmless, they can be suppressed, there is the possibility of later problems when objects are implicitly cast by type inferencing of return values.  IOW Java will compile the casts into the code when generic methods are returning objects of the non-reifiable type to be assigned to a variable of a type.  This will be shown in a following section.
+
+## Exception Handling
+Java `catch` statements are basically `instanceof` calls for the arguments against the various types of exceptions.  Also, it is required that any type referenced in a `catch` statement be a subclass of `Throwable`.  
+
+This means the subclass must be a reifiable type. Further it is simply not allowed to extend Throwable by a generic type.  
+
+### Exception Throwing
+You can indeed have methods that use Type Variables for the type of Exception they will throw.  Like this:
+
+```java
+interface Pocessor<A, E extends Throwable> {
+  public void process(A value) throws E;
+}
+```
+## Arrays and Their Types
+Arrays reify their component types - the type of the elements in array - this means the array types must be reifiable.  This means also array references are covariant within inheritance of the component type.
+
+```java
+Integer[] ints = {1, 2 , 3};
+Numbers[] nums = int;  // This okay by covariance
+
+// This will compile but it will throw an ArrayStoreException
+nums[2] = 1.324;
+```
+While the above will fail at runtime, the following Array Creation is a compiler error:
+
+```java
+public static <T> T[] makeArray() {
+T[] a = new T[3]; // compiler error
+return a;
+}
+```
+Why?  Because Java Arrays require a reifiable type to be created.  So if a **type is not reifiable** you cannot create an array from it.
+
+So what happens if you use a more universal to create the Array and then cast it down?
+
+```java
+Object[] oarr = {};
+        
+String[] strarr = (String[])oarr; // Compiles but gets class cast error at runtime.
+```
+So we cannot simply force the type from the root type.  So, for a factory method like this, what do we do?
+
+```java
+public static <T> T[] makeArrayWithWarning(int sizeOf) {
+    T[] a = (T[]) new Object[sizeOf]; // unchecked cast
+    return a;
+}
+
+@Test
+public void makeArrayWithWarningShouldWorkButFail() throws Exception {
+    String[] strArr = makeArrayWithWarning(10);
+}
+```
+We ignore the unchecked cast, again and we fail at runtime.  Compiles, but does not run.  This looked good, but it didn't work.  The cast using `(T[])` will in the end mean nothing.  It means `Object[]` and this ends up giving us again `[Ljava.lang.Object; cannot be cast to [Ljava.lang.String;`.
+
+“Recall that generics for Java are accompanied by a cast-iron guarantee: no cast inserted by erasure will fail, so long as there are no unchecked warnings.”
+
+Excerpt From: Maurice Naftalin and Philip Wadler. “Java Generics and Collections.” 
+
+We need to try another approach.
+
+### Using an Array and Reflection to Get It Right
+Okay so we can create a new approach.  We need to give a prototype of what we want so it can be created.
+
+```java
+public static < T > T[] makeArrayBasedOnEmptyModel(int sizeOf, T[]proto) {
+    proto = (T[]) Array.newInstance(proto.getClass().getComponentType(), sizeOf);
+    
+    return proto;
+}
+
+@Test
+public void makeArrayWithProtoShouldWork() throws Exception {
+    String[] proto = new String[0];
+    String[] strArr = makeArrayBasedOnEmptyModel(11, proto);
+    
+    assertEquals(0, proto.length);
+    assertEquals(11, strArr.length);
+}
+```
+
+This works but is a bit clumsy, create an array to get an array.  This is kind of like how Java toArray works on Collections.  This is odd because they could have been more succinct.  Let's try using a Class to do better.
+
+```java
+public static <T> T[] makeArrayForClass(int sizeOf, Class<T> clazz) {
+    return (T[]) Array.newInstance(clazz, sizeOf);
+}
+
+@Test
+public void makeArrayWithClassShouldWork() throws Exception {
+    String[] strArr = makeArrayForClass(11, String.class);
+    
+    assertEquals(11, strArr.length);
+}
+```
+This works very well but yes it is sad to have to do this all because of type erasure.  
+
+### Var Args Are Arrays So...
+
+You can only have a vararg of a type that is reifiable.
+
+
