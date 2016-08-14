@@ -38,7 +38,7 @@ Of course my first error was using '0' instead of something for additive identit
 [error] Total time: 2 s, completed Aug 13, 2016 11:08:25 PM
 ```
 
-Of course the first error makes sense you need a generic `zero` value for to provide the additive identity base value.  The second error isn't telling you anything about the code you wrote.  However, having played with `Numeric` based code in another exercise, I guessed that what I was missing was using the implicit to add values.  This, I hoped, would address whatever type inferencing was causing the tail of the list to be treated as a `List[String]`:
+Of course the first error makes sense you need a generic `zero` value to provide the additive identity base value.  The second error isn't telling you anything about the code you wrote.  However, having played with `Numeric` based code in another exercise, I guessed that what I was missing was using the implicit to add values.  This, I hoped, would address whatever type inferencing was causing the tail of the list to be treated as a `List[String]`:
 
 ```scala
     package org.invisibletech.grokking 
