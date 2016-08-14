@@ -38,7 +38,24 @@ Of course my first error was using '0' instead of something for additive identit
 [error] Total time: 2 s, completed Aug 13, 2016 11:08:25 PM
 ```
 
-Of course the first error makes sense you need a generic `zero` value to provide the additive identity base value.  The second error isn't telling you anything about the code you wrote.  However, having played with `Numeric` based code in another exercise, I guessed that what I was missing was using the implicit to add values.  This, I hoped, would address whatever type inferencing was causing the tail of the list to be treated as a `List[String]`:
+Of course the first error makes sense you need a generic `zero` value to provide the additive identity base value.  The second error isn't telling you anything about the code you wrote.  So my first play was to back off the generic aspect of my method to make sure nothing in my code was wrong that could result in misleading messages.  This was an approach I have used before - simplify the problem space to a specific case and then generalize it once it is working.  Nothing earth shattering, but I like to remind myself to keep it simple, especially in a feature rich language like Scala.
+
+```scala
+    package org.invisibletech.grokking 
+
+    import scala.math.Numeric._
+
+    object DivideAndConquer {
+        def sum(a: List[Int]): Int = {
+            a match {
+                case Nil => 0
+                case head :: rest => head + sum(rest)
+            }
+        }
+    }
+```
+
+However, having played with `Numeric` based code in another exercise, I guessed that what I was missing was using the implicit to add values.  This, I hoped, would address whatever type inferencing was causing the tail of the list to be treated as a `List[String]`:
 
 ```scala
     package org.invisibletech.grokking 
