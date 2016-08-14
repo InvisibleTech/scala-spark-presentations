@@ -53,4 +53,4 @@ Of course the first error makes sense you need a generic `zero` value to provide
         }
     }
 ```
-This worked and I had my working solution.  For me the interesting part of the exercise was making the leap from an error message that was a bit misleading to making better use of Numeric.
+This worked and I had my working solution.  For me the interesting part of the exercise was making the leap from an error message that was a bit misleading to making better use of 'Numeric'.  Had I read all the doc for 'Numeric'  I would have written the correct code in the first place, but I simply assumed 'Numeric' would just make it all work with a '+' overload.
