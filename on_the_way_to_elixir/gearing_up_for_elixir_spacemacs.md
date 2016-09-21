@@ -1,4 +1,4 @@
-# On The to Find My Elixir - I Found The Alchemist After Deciding to Focus On Evil
+# On The Way to Find My Elixir - I Found The Alchemist After Deciding to Focus On Evil
 Recently, I started working through the MEAP [The Little Elixir & Otp Guidebook](https://www.manning.com/books/the-little-elixir-and-otp-guidebook) to focus on learning Elixir and get some power skills with the ecosystem.  While this was essentially a tool chain expedition, I needed to bootstrap my dev tools.  Recently, due to the awesome, and exuberant encouragement of [Sebastian](https://github.com/sbastn) I became interested in moving off of `SublimeText` and into `vim`.  With even more exuberance, and encouragement from [Ben](https://www.linkedin.com/in/ben-zenittini-19457563), I am trying [spacemacs](http://spacemacs.org/) as part of the dev tools.  This includes `vim` and a useful version of `emacs`.  Eventually I ended up at the Alchemist and we will get to that soon.
 
 ## spacemacs
