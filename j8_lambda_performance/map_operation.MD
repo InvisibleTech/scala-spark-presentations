@@ -10,7 +10,7 @@ All three types of processing a `List<Double>`  are being used to collect a `Lis
 Why did I include the `foreach`?  Because from some claims I have read, that is supposed to be one of the fastest ways to step over a collection.  Though of course you should measure that.
 
 ### The Benchmark
-My benchmark can be found at [my github repo https://github.com/InvisibleTech/jmhlambdas] 
+My benchmark can be found at [my github repo](https://github.com/InvisibleTech/jmhlambdas)
 
 ## TL;DR
 Though I hope you'll look at and run the test for yourself, in the interest of getting to the point I'll say that you shouldn't automatically avoid using Java lambdas based on *the performance argument*.  You may have other reasons. For some people and uses, they are not the best choice.  I will disclose, I do use them a lot, in the interest of really getting a feel for their use.  I have backed off in places where they add no value.  What value?  That is another discussion.
@@ -57,7 +57,7 @@ Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2,360.062 sec
 
 ```
 ## Your Results May Differ
-I understand the lambdas and any optimizations regarding them may be highly dependent on versions of Java and whose Java.  So, reallly the best thing you can do is try my test.  If you find anything different, insane or puzzling feel free to contact me the email on my [github profile https://github.com/InvisibleTech].
+I understand the lambdas and any optimizations regarding them may be highly dependent on versions of Java and whose Java.  So, reallly the best thing you can do is try my test.  If you find anything different, insane or puzzling feel free to contact me the email on my [github profile](https://github.com/InvisibleTech).
 # The Java Map Operation Using a Lambda, Comparative Performance
 ## Preface
 The statement is pretty specific, my goal is to share results from a test that is meant to determine the *relative* time differences of using three mechanisms:
