@@ -1,6 +1,6 @@
 # The Java Map Operation Using a Lambda, Comparative Performance
 ## Preface
-The statement is pretty specific, my goal is to share results from a test that is meant to determine the *relative* time differences of using three mechanisms:
+My goal is to share results from a test that is meant to determine the *relative* time differences of using three mechanisms:
 * Map on a collection stream using lambda.
 * Map on a collection stream using an instance of a static inner class implementing the `java.util.function.Function` interface.
 * Iterate on a collection using `foreach`.
