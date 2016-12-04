@@ -15,6 +15,7 @@ My benchmark can be found at [my github repo](https://github.com/InvisibleTech/j
 ## TL;DR
 Though I hope you'll look at and run the test for yourself, in the interest of getting to the point I'll say that you shouldn't automatically avoid using Java lambdas based on *the performance argument*.  You may have other reasons. For some people and uses, they are not the best choice.  I will disclose, I do use them a lot, in the interest of really getting a feel for their use.  I have backed off in places where they add no value.  What value?  That is another discussion.
 
+## The Details
 During my two rounds of benchmarks, I found that there was about a 2% *tax* for using lambdas across the whole processing time.  At time scales of microseconds and below this might be absurd to consider if those times are for processes that don't need to approach real time (for which Java is not guaranteed).  Going in the opposite direction, if your processing already takes 24 hours and due to some SLA **it cannot take more**, not even 28 minutes more, then maybe lambdas are also the wrong choice.  However, I haven't measured this case and I don't know if the 2% difference gets worse or better at such large time scales.
 
 I derived my 2% simply by taking the difference between the lambda time and the fastest time in each JMH benchmark, and divding that difference by the fastest time. I did not include anything to the right of decimal point since the numbers are not absolute as indicated by their error ranges.  
