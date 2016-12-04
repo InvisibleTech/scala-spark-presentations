@@ -57,4 +57,4 @@ Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2,360.062 sec
 
 ```
 ## Your Results May Differ
-I understand the lambdas and any optimizations regarding them may be highly dependent on versions of Java and whose Java.  So, reallly the best thing you can do is try my test.  If you find anything different, insane or puzzling feel free to contact me the email on my [github profile](https://github.com/InvisibleTech).
+I understand the lambdas and any optimizations regarding them may be highly dependent on versions of Java and whose Java.  The best thing you can do is try my test.  If you find anything different, insane or puzzling feel free to contact me at the email on my [github profile](https://github.com/InvisibleTech).
